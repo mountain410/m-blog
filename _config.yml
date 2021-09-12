@@ -16,15 +16,13 @@ weibo_username:     mountain410
 zhihu_username:     mountain410
 github_username:    mountain410
 
-
-
 # Build settings
 # from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
 highlighter: rouge
-permalink: pretty
-paginate: 30
+# permalink: pretty
+paginate: 10
 #显示页码？
-#paginate_path: "page:num"
+# paginate_path: "page:num"
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
 anchorjs: true                          # if you want to customize anchor. check out line:181 of `post.html`
 
@@ -34,7 +32,7 @@ anchorjs: true                          # if you want to customize anchor. check
 # from PR#40, to support local preview for Jekyll 3.0
 gems: [jekyll-paginate]
 
-
+plugins: [jekyll-paginate]
 
 # Markdown settings
 # replace redcarpet to kramdown,
