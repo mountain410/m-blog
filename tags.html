@@ -1,0 +1,99 @@
+---
+title: Tags
+layout: default
+description: I'll never die. I'll never cry. You'll see.
+header-img: ""
+---
+
+
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{{ assets_base_url }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}');background-color:darkcyan">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading" id="tag-heading">
+                    <h1>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</h1>
+                    <span class="subheading">{{ page.description }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+		<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <!-- 标签云 -->
+			<!-- <div id='tag_cloud' class="tags">
+				{% for tag in site.tags %}
+				<a href="#{{ tag[0] }}" title="{{ tag[0] }}" rel="{{ tag[1].size }}">{{ tag[0] }}</a>
+				{% endfor %}
+			</div> -->
+
+			<!-- Tags (as filter) 标签右上角带数字 -->
+			<div id='tag_cloud' class="tags tags-sup js-tags">
+				<a class="tag-button--all" data-encode="">
+					Show All
+					<sup>{{site.posts.size}}</sup>
+				</a>
+
+				{% capture tags %}
+				{% for tag in site.tags %}
+				<a href="#{{ tag[0] }}" data-sort="{{ site.posts.size | minus: tag[1].size | prepend: '0000' | slice: -4, 4 }}"
+					data-encode="{{ tag[0] | strip | url_encode }}"
+					class="tag-button"
+					title="{{ tag[0] }}" rel="{{ tag[1].size }}">
+					{{ tag[0] }}
+					<sup>{{tag[1].size}}</sup>
+				</a>__SEPERATOR__
+				{% endfor %}
+				{% endcapture %}
+        		{{ tags | split:'__SEPERATOR__' | sort }}
+			</div>
+
+			<div style="display:flex;margin-bottom:25px">
+				<button type="button" class="btn btn-primary btn-xs button-show" style="border-radius:999em;margin-right:10px;padding:2px 7px">show all</button>
+				<button type="button" class="btn btn-default btn-xs button-hide" style="border-radius:999em;padding:2px 7px">hide all</button>
+			</div>
+			
+            <!-- 标签列表 (点击折叠的js代码在footer.html中)-->
+			{% for tag in site.tags %}
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="{{ tag[0] }}">
+					<div style="display:flex">
+						<div style="flex-grow: 1;CURSOR:pointer">
+							<img src="https://cdn.jsdelivr.net/gh/Jia-py/Jia-py.github.io/img/arrow.png" style="height:34px;width:34px;margin-bottom:10px;transition-duration:.5s;">
+						</div>
+						<div style="flex-grow:10;CURSOR:pointer">
+							<p class="tag-text" style="margin:0 0 0">{{ tag[0] }}</p>
+						</div>
+					</div>
+                </span>
+				{% for post in tag[1] %}
+				  <!-- <li class="listing-item">
+				  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+				  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+				  </li> -->
+				 <div class="post-preview" style="display:none">
+				    <a href="{{ post.url | prepend: site.baseurl }}">
+				        <h5 class="post-title" style="margin-top: 0;">
+                            {{ post.title }}
+				        </h5>
+						<!--副标签-->
+				        <!-- {% if post.subtitle %}
+				        <h3 class="post-subtitle">
+				            {{ post.subtitle }}
+				        </h3> -->
+				        <!-- {% endif %} -->
+				    </a>
+				    <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p>
+				</div>
+				<!-- <hr> -->
+				{% endfor %}
+			</div>
+			{% endfor %}
+
+		</div>
+	</div>
+</div>
