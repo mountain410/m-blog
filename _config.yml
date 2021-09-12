@@ -66,9 +66,9 @@ kramdown:
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: " GIS🌎 & CS⌨️ | Student🧑‍🎓 | ZJU📚 "
-sidebar-avatar: /img/avatar-JPY.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
-sidebar-email: "📧  jiapengyue@zju.edu.cn"
+sidebar-about-description: " 一个会点前端的奶爸 "
+sidebar-avatar: /img/avatar-sidebar.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-email: "502597986@qq.com"
 
 
 
@@ -86,26 +86,5 @@ friends: [
     },{
         title: "My_github",
         href: "https://github.com/mountain410"
-    },{
-        title: "それじゃまたね",
-        href: "https://www.zhihu.com/people/lv-jia-jin-43"
-    },{
-        title: "Gao_Wei",
-        href: "https://weibo.com/u/6404835110?is_hot=1#_rnd1613146455654"
-    },{
-        title: "parz1の仮想化",
-        href: "https://parz1.goder.club/"
-    },{
-        title: "大姐头",
-        href: "https://weibo.com/u/6276199739"
-    },{
-        title: "我会成为什么款式的人",
-        href: "https://www.douban.com/people/188792951/"
-    },{
-        title: "LTikiTaka",
-        href: "https://mp.weixin.qq.com/s/hlOUlil4vCQ7WIntLLxYDA"
-    },{
-        title: "Kevin",
-        href: "https://h5.qzone.qq.com/mqzone/profile?starttime=1617338072434&hostuin=908434374"
     }
 ]
