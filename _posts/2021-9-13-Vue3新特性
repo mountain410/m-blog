@@ -1,0 +1,448 @@
+---
+layout:     post
+title:      "Vue3新特性"
+date:       2020-12-20 17:18:00
+author:     "Mountain"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - Vue
+---
+
+
+## vue3亮点
+
+- Performance：性能更比Vue 2.0强。
+- Tree shaking support：可以将无用模块“剪辑”，仅打包需要的。
+- Composition API：组合API
+- Fragment, Teleport, Suspense：“碎片”，Teleport即Protal传送门，“悬念”
+- Better TypeScript support：更优秀的Ts支持
+- Custom Renderer API：暴露了自定义渲染API
+
+对于小型项目上述亮点感知不是很明显，这些亮点尤其突出体现在复杂业务场景的大型项目中，会带来更好的体验，对生产效率有较大提升。
+
+其实上面这些亮点是尤大自己在直播的时候官方列出的一些亮点，查看详情点[这里](https://juejin.cn/post/6844904134303301645#heading-2)
+
+下面主要介绍下vue3主要的一些变化
+
+## vue3一些主要变化
+
+### 全局 API
+调用 createApp 返回一个应用实例
+
+```
+import { createApp } from 'vue'
+
+createApp(App).use(router).use(store).mount('#app')
+```
+
+2.x 全局 API | 3.x 实例 API (app)
+---|---
+Vue.config | app.config
+Vue.config.productionTip | 移除
+Vue.config.ignoredElements | app.config.isCustomElement
+Vue.component | app.component
+Vue.directive | app.directive
+Vue.mixin | app.mixin
+Vue.use | app.use 
+Vue.prototype | app.config.globalProperties
+
+
+### 全局 API Treeshaking
+**Vue2.x 用法**
+
+```
+import Vue from 'vue'
+
+Vue.nextTick(() => {
+  // 一些和DOM有关的东西
+})
+```
+
+**在 Vue 3 中**，全局和内部 API 都经过了重构，并考虑到了 tree-shaking 的支持。因此，全局 API 现在只能作为 ES 模块构建的命名导出进行访问。
+```
+import { nextTick } from 'vue'
+
+nextTick(() => {
+  // 一些和DOM有关的东西
+})
+```
+
+**Vue 2.x 中的这些全局 API 受此更改的影响：**
+- Vue.nextTick
+- Vue.observable (用 Vue.reactive 替换)
+- Vue.version
+- Vue.compile (仅全构建)
+- Vue.set (仅兼容构建)
+- Vue.delete (仅兼容构建)
+
+
+### 片段 & $attrs
+现在 $attrs 包含传递给组件的所有 attribute，包括 class 和 style
+
+**需要注意的一点是**，在 3.x 中，现在支持多个根节点，在定义有多个根节点的时候，需要显式定义 attribute 应该分布在哪里
+
+```
+<template>
+  <header>...</header>
+  <main v-bind="$attrs">...</main>
+  <footer>...</footer>
+</template>
+```
+
+### 自定义指令
+API有如下变化，钩子函数参数不变
+- bind → beforeMount
+- inserted → mounted
+- beforeUpdate：新的！这是在元素本身更新之前调用的，很像组件生命周期钩子。
+- update → 移除！有太多的相似之处要更新，所以这是多余的，请改用 updated。
+- componentUpdated → updated
+- beforeUnmount：新的！与组件生命周期钩子类似，它将在卸载元素之前调用。
+- unbind -> unmounted
+
+### Data 定义
+data 选项已标准化为只接受返回 object 的 function
+
+mixin、extend 对于 data的合并是浅合并
+
+*vue3中不建议用mixin写法，用composition API 替代。*
+
+### emits Option
+子组件触发父组件事件需要传入 emits: [] 
+
+```
+<template>
+  <div>
+    <p>{{ text }}</p>
+    <button v-on:click="$emit('accepted')">OK</button>
+  </div>
+</template>
+<script>
+  export default {
+    props: ['text'],
+    emits: ['accepted'],
+    setup (props, context) {
+        onMounted(() => {
+            context.emit('accepted')
+        })
+    }
+  }
+</script>
+```
+
+### 事件 API
+$on，$off 和 $once 实例方法已被移除，应用实例不再实现事件触发接口。
+即不能直接通过bus $emit、$on组件间通信了。官方推荐使用mitt 第三方库。类似的api，还是熟悉的味道~
+
+```
+import mitt from 'mitt'
+const emitter = mitt()
+// ...
+emitter.emit('trigger', params)
+// ...
+emitter.on('trigger', callback)
+// ...
+emitter.off('trigger', callback)
+```
+### 函数式组件*
+主要是无状态组件的差异：
+- functional attribute 在` <template> `中移除
+- listeners 现在作为 $attrs 的一部分传递，可以将其删除
+
+>然而，在 Vue 3 中，有状态组件的性能已经提高到可以忽略不计的程度。
+
+### v-model
+- 非兼容：用于自定义组件时，v-model prop 和事件默认名称已更改：
+- prop：value -> modelValue；
+- event：input -> update:modelValue；
+- 非兼容：v-bind 的 .sync 修饰符和组件的 model 选项已移除，可用 v-model 作为代替；
+- 新增：现在可以在同一个组件上使用多个 v-model 进行双向绑定；
+- 新增：现在可以自定义 v-model 修饰符。
+
+
+```
+<ChildComponent v-model:title="pageTitle" v-model:content="pageContent" />
+
+<!-- 是以下的简写： -->
+
+<ChildComponent
+  :title="pageTitle"
+  @update:title="pageTitle = $event"
+  :content="pageContent"
+  @update:content="pageContent = $event"
+/>
+```
+
+
+### v-if 与 v-for 的优先级对比
+
+两者作用于同一个元素上时，v-if 会拥有比 v-for 更高的优先级
+强烈建议不要在同一个元素上同时使用
+
+
+### 自定义元素交互
+- 非兼容：自定义元素白名单现在在模板编译期间执行，应该通过编译器选项而不是运行时配置来配置。
+- 非兼容：特定 is prop 用法仅限于保留的 `<component> `标记。
+- 新增：有了新的 v-is 指令来支持 2.x 用例，其中在原生元素上使用了 v-is 来处理原生 HTML 解析限制。
+
+[点此查看更多详细变化](https://v3.cn.vuejs.org/guide/migration/custom-elements-interop.html)
+
+替换 config.ignoredElements 与 vue-loader 的 compilerOptions (使用 build 步骤) 或 app.config.isCustomElement (使用动态模板编译)
+
+将所有非 `<component>` tags 与 is 用法更改为 `<component is="...">` (对于 SFC 模板) 或 v-is (对于 DOM 模板)。
+
+### key attribute
+- 新增：对于 v-if/v-else/v-else-if 的各分支项 key 将不再是必须的，因为现在 Vue 会自动生成唯一的 key。
+  - 非兼容：如果你手动提供 key，那么每个分支必须使用唯一的 key。你不能通过故意使用相同的 key 来强制重用分支。
+- 非兼容：`<template v-for>` 的 key 应该设置在` <template> `标签上 (而不是设置在它的子节点上)。
+
+不建议在 v-if/v-else/v-else-if 的分支中使用 key attribute
+
+### 按键修饰符
+
+- 非兼容：不再支持使用数字 (即键码) 作为 v-on 修饰符
+- 非兼容：不再支持 config.keyCodes
+
+现在建议对任何要用作修饰符的键使用 kebab-cased (短横线) 大小写名称。
+
+### 在 prop 的默认函数中访问 this
+生成 prop 默认值的工厂函数不再能访问 this。
+
+替代方案：
+
+把组件接收到的原始 prop 作为参数传递给默认函数；
+
+注入 API 可以在默认函数中使用。
+
+### 渲染函数API
+
+- h 现在全局导入，而不是作为参数传递给渲染函数
+- render渲染函数参数更改为在有状态组件和函数组件之间更加一致
+- vnode 现在有一个扁平的 prop 结构
+render 函数不再接收任何参数，它将主要用于 setup() 函数内部
+
+```
+// Vue 3 渲染函数示例
+import { h } from 'vue'
+
+export default {
+  render() {
+    return h('div')
+  }
+}
+```
+
+在 3.x 中，整个 VNode props 结构是扁平的
+```
+// 3.x 语法
+{
+  class: ['button', 'is-outlined'],
+  style: { color: '#34495E' },
+  id: 'submit',
+  innerHTML: '',
+  onClick: submitForm,
+  key: 'submit-button'
+}
+```
+
+### 关于Devtools
+本地开发需要安装最新的vue-tools beta版本 
+
+For Chrome: [chrome 商店安装](https://chrome.google.com/webstore/detail/vuejs-devtools/ljjemllljcmogpfapbkkighbhhppjdbg?hl=en)
+
+**注意**，装完之后还是不显示vue-tools，请把本地stable版本的vue-tool关掉，会有冲突。
+
+
+## vue3移除的特性
+
+### 移除$children
+
+`$children` 实例 `property` 已从 Vue 3.0 中移除，不再支持。
+如果你需要访问子组件实例，建议使用 $refs
+
+### 过滤器
+从 Vue 3.0 开始，过滤器已删除，不再支持。
+
+如果组件内部定义了`filters` 过滤器，建议方法调用或计算属性替换它们
+
+如果全局定义了过滤器，建议通过全局属性在所有组件中使用它app.config.globalProperties.$filters。
+**注意**，这种方式只能用于方法中，不可以在计算属性中使用，因为后者只有在单个组件的上下文中定义时才有意义。
+
+### v-on.native 已移除
+所有v-on 绑定事件都不在支持.native 修饰符
+
+### 内联模板 Attribute
+对内联特性的支持已被移除。
+
+### 移除 $listeners
+$listeners 对象在 Vue 3 中已被移除。
+在 Vue 3 的虚拟 DOM 中，事件监听器现在只是以 on 为前缀的 attribute，这样就成了 $attrs 对象的一部分，因此 $listeners 被移除了。
+
+
+
+
+## Composition API（组合API） 
+
+这个算是vue3 最大亮点之一，可以很好的替代vue2.x的mixin，以函数式编程思想实现更灵活且无副作用的复用代码。尤其对于大组件复杂业务场景特别有用，拆分大型组件会方便很多。
+
+然而，vue3同样支持原来的options API写法，甚至可以和组合API混用，对于一些小型项目完全可以用options API 结合其他vue3新特性写法。
+
+### setup
+
+setup 函数是一个新的组件选项。作为在组件内使用 Composition API 的入口点。
+
+创建组件实例，然后初始化 props ，紧接着就调用setup 函数。从生命周期钩子的视角来看，它会在 beforeCreate 钩子之前被调用。
+
+setup 接收两个参数，第一个是props对象， 第二个上下文对象 context。
+
+**setup 内部context 只能访问到attrs、slots、emit，无法访问组件中声明的其他任何属性——本地状态、计算属性或方法。**
+
+ref和reactive 是两个响应式api，可以将声明的变量转换成响应式。
+
+ref接受一个参数值（）并返回一个响应式且可改变的 ref 对象。ref在内部使用时要加 .value，在模板中用的时候则不用。
+
+reactive 
+
+如果 setup 返回一个对象，则对象的属性将会被合并到组件模板的渲染上下文。
+```
+<template>
+  <div>{{ count }} {{ object.foo }}</div>
+</template>
+
+<script>
+  import { ref, reactive } from 'vue'
+
+  export default {
+    props: {
+      name: String,
+    },
+    setup(props, context) {
+      const count = ref(0)
+      const object = reactive({ foo: 'bar' })
+      watchEffect(() => {
+        console.log(`name is: ` + props.name)
+        console.log(`attrs is: ` + context.attrs)
+        console.log(`slots is: ` + context.slots)
+        console.log(`emit is: ` + context.emit)
+      })
+      // 暴露给模板
+      return {
+        count,
+        object,
+      }
+    },
+  }
+</script>
+```
+setup 也可以返回一个函数，函数中也能使用当前 setup 函数作用域中的响应式数据
+
+```
+import { h, ref, reactive } from 'vue'
+
+export default {
+  setup() {
+    const count = ref(0)
+    const object = reactive({ foo: 'bar' })
+
+    return () => h('div', [count.value, object.foo])
+  },
+}
+```
+
+**注意**，在ts写法中若要获取传递给 setup() 的参数的类型推断，需要使用 defineComponent 
+
+```
+export default defineComponent({
+    setup(props, context) {}
+    ...
+})
+```
+
+**watch & watchEffect**
+
+watch 用法与vue2相同，唯一变化是支持监听多个数据源。
+
+```
+watch([fooRef, barRef], ([foo, bar], [prevFoo, prevBar]) => {
+  /* ... */
+})
+```
+
+watchEffect 立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
+两者不同之处在于：
+
+- watchEffect 不需要指定监听的属性，他会自动的收集依赖， 只要我们回调中引用到了 响应式的属性， 那么当这些属性变更的时候，这个回调都会执行，而 watch 只能监听指定的属性而做出变更(v3开始可以同时指定多个)。
+- watch 可以获取到新值与旧值（更新前的值），而 watchEffect 是拿不到的。
+- watchEffect 如果存在的话，在组件初始化的时候就会执行一次用以收集依赖（与computed同理），而后收集到的依赖发生变化，这个回调才会再次执行，而 watch 不需要，因为他一开始就指定了依赖。
+
+### 生命周期钩子函数
+可以直接导入 onXXX 一族的函数来注册生命周期钩子：
+
+```
+import { onMounted, onUpdated, onUnmounted } from 'vue'
+
+const MyComponent = {
+  setup() {
+    onMounted(() => {
+      console.log('mounted!')
+    })
+    onUpdated(() => {
+      console.log('updated!')
+    })
+    onUnmounted(() => {
+      console.log('unmounted!')
+    })
+  },
+}
+```
+这些生命周期钩子注册函数只能在 setup() 期间同步使用， 因为它们依赖于内部的全局状态来定位当前组件实例（正在调用 setup() 的组件实例）, 不在当前组件下调用这些函数会抛出一个错误。
+
+组件实例上下文也是在生命周期钩子同步执行期间设置的，因此，在卸载组件时，在生命周期钩子内部同步创建的侦听器和计算状态也将自动删除。
+
+- **与 2.x 版本生命周期相对应的组合式 API**
+    - beforeCreate -> 使用 setup()
+    - created -> 使用 setup()
+    - beforeMount -> onBeforeMount
+    - mounted -> onMounted
+    - beforeUpdate -> onBeforeUpdate
+    - updated -> onUpdated
+    - beforeDestroy -> onBeforeUnmount
+    - destroyed -> onUnmounted
+    - errorCaptured -> onErrorCaptured
+    - renderTracked -> onRenderTracked
+    - renderTriggered -> onRenderTriggered
+
+这些就不做详细展开了，不清楚的可以查阅官方文档。
+
+
+## 最后总结
+
+上面主要就是我个人针对vue3相对vue2.x一些变化的筛选，以及一些重点的新特性和API。遗漏肯定是有遗漏的，要详细深入学习使用vue3，我还是建议去看vue3文档，这里也就是做个抛砖引玉。
+
+用新不用旧。vue3确实在vue2.x的基础上做了不小的变化，提升了很多方面，一定程度上解决了一些vue2.x在某些场景使用的痛点。
+新项目可以直接用vue3 + ts + vue-router + vuex 搭建，配合使用element plus 组件库，*目前vite 还在更新中，还不够稳定，不建议使用*。
+
+然而，如果项目不是因为一些不可避免的问题和痛点，通过更新到vue3能很好的解决这些，那么就没有必要一定要迁移。尤其是处于稳定生产的阶段。老项目迁移可以等 vue2.7 迁移过渡版本
+
+**一些帮助学习&理解vue3的分享：**
+
+[官方中文文档](https://v3.cn.vuejs.org/)
+
+[组合API官方介绍](https://composition-api.vuejs.org/zh/api.html#setup)
+
+一些我觉得还不错的文章：
+
+https://juejin.cn/post/6844904084512718861#heading-38
+
+https://juejin.cn/post/6844904134303301645#heading-2
+
+https://juejin.cn/post/6844903957807169549#heading-0
+
+https://juejin.cn/post/6858558735695937544#heading-14
+
+https://juejin.cn/post/6903171037211557895
+
+一些我觉得还不错的项目和demo：
+
+https://github.com/anncwb/vue-vben-admin
+
+https://github.com/githyw/column
