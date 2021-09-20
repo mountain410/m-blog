@@ -104,6 +104,7 @@
 .side-catalog .catalog-body .h1_nav,
 .side-catalog .catalog-body .h2_nav {
   margin-left: 0;
+  color: #000;
   font-size: 13px;
   font-weight: bold;
 }
