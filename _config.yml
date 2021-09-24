@@ -12,8 +12,8 @@ jsdelivr-cdn-enable: false
 
 # SNS settings
 RSS: false
-weibo_username:     mountain410
-zhihu_username:     mountain410
+# weibo_username:     mountain410
+# zhihu_username:     mountain410
 github_username:    mountain410
 
 # Build settings
