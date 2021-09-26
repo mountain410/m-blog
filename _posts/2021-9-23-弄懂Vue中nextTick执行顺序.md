@@ -8,6 +8,11 @@ tags:
     - 前端综合
 ---
 
+## 先上结论
+- vue中的nextTick 通过优雅降级适配不同浏览器和平台，vue2.6版本依次为Promise、MutationObserver、setImmediate、setTimeout
+- vue中的nextTick 是跟随DOM更新后的回调，是DOM更新后执行的第一个微任务（或者宏任务，根据nextTick命中分情况），所以低于同级的同步任务，不管它在当前执行栈的哪个位置
+- **注意**DOM更新不代表UI渲染，UI渲染只在一次事件循环后执行，如果触发了DOM更新，则按照事件循环顺序执行nextTick
+
 ## Vue中的nextTick官方说明
 
 在下次 DOM 更新循环结束之后执行延迟回调。在修改数据之后立即使用这个方法，获取更新后的 DOM。
@@ -43,7 +48,7 @@ Vue中，this.a="22222",数据被修改，简易版流程（微任务版）：
 6. 执行nextTick产生的微任务，此时就能获取到更新后的Dom；
 7. 渲染Dom，进入下一个任务队列；
 
-![nextTick在事件循环中执行](D:\pros\blog\m-blog\img\in-post\nextTick\nextTick演示.webp)
+![nextTick在事件循环中执行](..\img\in-post\nextTick\nextTick演示.webp)
 
 测试代码：
 
@@ -99,7 +104,7 @@ mounted() {
 
 **注意！！！**此时dom更新了但未渲染
 
-![dom更新了但没渲染](D:\pros\blog\m-blog\img\in-post\nextTick\dom更新了但没渲染.webp)
+![dom更新了但没渲染](..\img\in-post\nextTick\dom更新了但没渲染.webp)
 
 
 
